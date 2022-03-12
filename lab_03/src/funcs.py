@@ -3,7 +3,7 @@ def print_data(data):
     print('   x   |   y  \n'
           '----------------')
     for point in data:
-        print("%.3f  |  %.3f" % (point[0], point[1]))
+        print("{:6.3f}".format(point[0]), "|", "{:6.3f}".format(point[1]))
     print('----------------\n')
 
 
@@ -130,3 +130,35 @@ def find_section(points: list, x):
 # поиск результата по формуле кубического полинома (xl - нижняя граница интервала)
 def find_result(x, a, b, c, d, xl):
     return a + b * (x - xl) + c * (x - xl) ** 2 + d * (x - xl) ** 3
+
+
+def methods_comparison(data):
+    print('Comparisons for x = [0.03, 5.9, 9.67]')
+
+    spline = []
+    for x in [0.03, 5.9, 9.67]:
+        a = [0] + [p[1] for p in data]
+        h = [0] + [data[i][0] - data[i - 1][0] for i in range(1, len(data))]
+        c = [0 for i in range(len(a))]
+        b = c[:]
+        d = c[:]
+        ksi = c[:]
+        eta = c[:]
+        i = find_section(data, x)
+
+        straight_walk(ksi, eta, len(c), data, h)
+        forward_walk(ksi, eta, c)
+        find_ratios(d, b, a, c, h)
+
+        spline.append(find_result(x, a[i], b[i], c[i], d[i], data[i - 1][0]))
+
+    print('-' * 44)
+    print('|  Spline  |'     '{:^9.3f}|'.format(spline[0]), '{:^9.3f}|'.format(spline[1]), '{:^9.3f}|'.format(spline[2]))
+    print('-' * 44)
+
+    y1 = newton(data[0:3], data[0][0], 3)
+    y2 = newton(data[4:7], data[len(data) // 2][0], 3)
+    y3 = newton(data[-3:], data[-1][0], 3)
+
+    print('|  Newton  |'     '{:^9.3f}|'.format(y1), '{:^9.3f}|'.format(y2), '{:^9.3f}|'.format(y3))
+    print('-' * 44)

@@ -11,6 +11,7 @@ if __name__ == "__main__":
 
     data.sort(key=lambda x: x[0])
 
+    methods_comparison(data)
     # все исходные игреки, потому что коэффициент a[i] == y[i-1]
     a = [0] + [p[1] for p in data]
 
@@ -25,6 +26,7 @@ if __name__ == "__main__":
     ksi = c[:]
     eta = c[:]
 
+    print("\nРешение задачи")
     x = input_x()
     i = find_section(data, x)
     print("x = ", x, "  ->  x ∈ [", data[i - 1][0], '; ', data[i][0], ']\n', sep='')
@@ -37,4 +39,4 @@ if __name__ == "__main__":
     find_ratios(d, b, a, c, h)
 
     result = find_result(x, a[i], b[i], c[i], d[i], data[i - 1][0])
-    print("Result -->", result)
+    print("\nResult -->", result)
