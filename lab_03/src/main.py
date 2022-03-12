@@ -32,7 +32,6 @@ if __name__ == "__main__":
     print("x = ", x, "  ->  x ∈ [", data[i - 1][0], '; ', data[i][0], ']\n', sep='')
 
     c, ksi, eta = start_ratios(x, data, c, ksi, eta)
-    # print(c, ksi, eta, sep='\n')
 
     straight_walk(ksi, eta, len(c), data, h)
     forward_walk(ksi, eta, c)
