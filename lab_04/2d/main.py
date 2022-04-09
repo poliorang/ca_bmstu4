@@ -43,10 +43,21 @@ def append_right_side(matrix, dots):
 def get_coefficient(dots, degree):
     coefficient = 0
     for i in range(len(dots)):
-        # print(dots[i].weight, dots[i].x, degree)
         coefficient += dots[i].weight * (dots[i].x ** degree)
-    # print(coefficient)
     return coefficient
+
+
+def find_slae_matrix_3d(dots, degree):
+    matrix = []
+    for h in range(len(dots)):
+        coefficient = 0
+        row = []
+        for i in range(degree + 1):
+            for j in range(degree + 1):
+                coefficient += dots[i].weight * (dots[i].y ** (i - j)) * (dots[i].x ** degree)
+            row.append(coefficient)
+        matrix.append(row)
+    return matrix
 
 
 def find_slae_matrix(dots, degree):
