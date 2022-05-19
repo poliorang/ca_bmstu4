@@ -19,6 +19,7 @@ def init_functions(k, a, p, f, i, T, a0, R):
     f[i] = 2 * T0 / R * a[i]
 
 
+# находим коэффициенты при левом краевом условии
 def left_border_coeffs(k, A, B, C, D, A_, B_, C_, D_, T, f, p, F0, a0, h, i=0):
     k[i + 1] = A1 * (B1 + C1 * (T[i + 1] ** M1))
     A[i] = 0
@@ -35,6 +36,7 @@ def left_border_coeffs(k, A, B, C, D, A_, B_, C_, D_, T, f, p, F0, a0, h, i=0):
     D_[i] = - B[i] * T[i] + C[i] * T[i + 1] + D[i]
 
 
+# находим коэффициенты при правом краевом условии
 def right_border_coeffs(k, A, B, C, D, A_, B_, C_, D_, T, f, p, a, a0, h, i):
     A[i] = (k[i - 1] + k[i]) / 2
     B[i] = (k[i - 1] + k[i]) / 2 + p[i] * h ** 2 + a[i] * h
@@ -51,6 +53,7 @@ def right_border_coeffs(k, A, B, C, D, A_, B_, C_, D_, T, f, p, a, a0, h, i):
     D_[i] = A[i] * T[i - 1] - B[i] * T[i] + D[i]
 
 
+# находим коэффициенты
 def non_border_coeffs(k, A, B, C, D, A_, B_, C_, D_, T, f, p, a0, h, i):
     k[i + 1] = A1 * (B1 + C1 * (T[i + 1] ** M1))
     A[i] = (k[i - 1] + k[i]) / 2
@@ -69,9 +72,23 @@ def non_border_coeffs(k, A, B, C, D, A_, B_, C_, D_, T, f, p, a0, h, i):
     D_[i] = A[i] * T[i - 1] - B[i] * T[i] + C[i] * T[i + 1] + D[i]
 
 
+# прогоночные коэффициенты, изначальные кси и эта равны нулю
 def run_through_coeffs(ksi, eta, A_, B_, C_, D_, i):
     ksi[i] = C_[i - 1] / (B_[i - 1] - A_[i - 1] * ksi[i - 1])
     eta[i] = (A_[i - 1] * eta[i - 1] + D_[i - 1]) / (B_[i - 1] - A_[i - 1] * ksi[i - 1])
+
+
+# обратный ход - вычисляем дельта y - расстояние между точками в сетке
+def reverse_course(ksi, eta, N, dy, T, A_, B_, D_):
+    max_dy = 0
+    for i in range(N, -1, -1):
+        if i < N:
+            dy[i] = ksi[i + 1] * dy[i + 1] + eta[i + 1]
+        else:
+            dy[i] = (A_[i] * eta[i] + D_[i]) / (B_[i] - A_[i] * ksi[i])
+        max_dy = max(max_dy, abs(dy[i] / T[i]))
+
+    return max_dy
 
 
 def show(N, h, a0, F0, T):
@@ -86,6 +103,7 @@ def show(N, h, a0, F0, T):
     ax.set_ylabel('Температура, К')
     ax.grid(True)
     plt.show()
+
 
 def main():
     while True:
@@ -137,9 +155,8 @@ def main():
         ksi = [0 for i in range(N + 1)]
         eta = [0 for i in range(N + 1)]
         dy = [0 for i in range(N + 1)]
-        max_dy = 0
-        j = 0
 
+        j = 0
         while j < MAX_ITER:
             for i in range(N + 1):
 
@@ -157,13 +174,8 @@ def main():
                 if i > 0:
                     run_through_coeffs(ksi, eta, A_, B_, C_, D_, i)
 
-            # обратный ход - вычисляем дельта y - расстояние между точками в сетке
-            for i in range(N, -1, -1):
-                if i < N:
-                    dy[i] = ksi[i + 1] * dy[i + 1] + eta[i + 1]
-                else:
-                    dy[i] = (A_[i] * eta[i] + D_[i]) / (B_[i] - A_[i] * ksi[i])
-                max_dy = max(max_dy, abs(dy[i] / T[i]))
+            # максимальная разность между значением и узлом
+            max_dy = reverse_course(ksi, eta, N, dy, T, A_, B_, D_)
 
             if max_dy < EPS:
                 break
@@ -171,7 +183,6 @@ def main():
                 for i in range(N + 1):
                     T[i] += dy[i]
 
-            max_dy = 0
             j += 1
 
         show(N, h, a0, F0, T)
